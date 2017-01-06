@@ -2,29 +2,40 @@
 # -*- coding: utf-8 -*-
 
 from time import *
-import re, sys, os, random, requests 
+import re, sys, os, random, requests
 from bs4 import BeautifulSoup as BS
 
 ## Define constant variables;
 URL = "https://adressesok.posten.no/nb/addresses/search?view=list&q=postnummer%3A"
-wd  = "/home/huti/Posten/pages/"
-log = "/home/huti/Posten/log"
+wd  = "/home/tian/Posten/pages/"
+log = "/home/tian/Posten/log"
 
 ## Record log
 def write_log(postnr, msg):
+    log = "/home/tian/Posten/log"
     with open(log, "a") as l:
         l.write(postnr + " " +  msg + " " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "\n")
         l.close()
     print  "\rPostnumber: " + postnr + " " + msg + "!"
 
-## 
+
+proxies_ls = [
+    "https://37.9.45.242:8085",
+    "https://91.243.94.120:8085",
+    "https://93.179.89.230:8085",
+    "https://146.185.204.86:8085",
+    "https://91.243.89.89:8085"
+]    
+
+##
 def download_page(postnr):
     url = URL + postnr
     notDownloaded = True
     t1 = time()
     while notDownloaded:
-        r = requests.get(url, timeout=5)
-        sleep(2)
+        proxies = {"https" : proxies_ls[id % 5]}
+        r = requests.get(url, proxies = proxies, timeout=5)
+        sleep(1)
         html = r.content
         bs = BS(html)
         try:
@@ -36,14 +47,16 @@ def download_page(postnr):
                 with open(file_name, "w") as f:
                     f.write(html)
                     f.close()
-                write_log(postnr, "OK")            
+                write_log(postnr, "OK")
             else:
-                write_log(postnr, "NoAddress")  
+                write_log(postnr, "NoAddress")
             notDownloaded = False
         except:
-            sleep(60)
+            global id
+            id = id + 1
+            sleep(1)
             msg = "\rPostnumber " + postnr + " try later!" + " waited " + str(int(time()-t1)) + " seconds."
-            sys.stdout.write(msg); sys.stdout.flush() 
+            sys.stdout.write(msg); sys.stdout.flush()
 
 
 ## postnr_all
@@ -56,7 +69,7 @@ for i in range(len(xx)):
 
 ## postnr_downloaded
 postnr_downloaded = []
-f = open(log, 'r')
+f = open('/home/tian/Posten/log', 'r')
 for line in f:
     postnr_downloaded.append(line[0:4])
 
@@ -70,7 +83,8 @@ print "postnr_all: " + str(len(postnr_all))
 print "postnr_downloaded: " + str(len(postnr_downloaded))
 print "postnr_todownload:" + str(len(postnr_todownload))
 
+
+id = 1
 for postnr in postnr_todownload:
     download_page(postnr)
-
 
