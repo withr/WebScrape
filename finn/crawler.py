@@ -7,11 +7,11 @@ from bs4 import BeautifulSoup as BS
 
 ## Define constant variables;
 URL = "https://m.finn.no/lookup.html?finnkode="
-dir_prj = "/home/tian/HDD1T/Finn/"
+dir_prj = "/home/tian/Finn/"
 
 codeLen = 10000000
-codeFirst = int(float(sys.argv[1]) * codeLen)
-codeLast  = int(float(sys.argv[2]) * codeLen) 
+codeFirst = int(sys.argv[1]) * codeLen
+codeLast  = int(sys.argv[1]) * codeLen + codeLen
 
 pag = dir_prj + "pages_" + sys.argv[1] + "/"
 log = dir_prj + "log_" + sys.argv[1]
@@ -19,6 +19,7 @@ log = dir_prj + "log_" + sys.argv[1]
 proxies_ls = [
     "https://37.9.45.242:8085",
     "https://91.243.94.120:8085",
+    "https://93.179.89.230:8085",
     "https://146.185.204.86:8085",
     "https://91.243.89.89:8085"] 
 
@@ -65,7 +66,7 @@ def download_page(finn_code):
         write_log(finn_code, "RequestError")   
 
         
-if len(sys.argv) > 3:
+if len(sys.argv) > 2:
     codes_all = []
     with open(log, "r") as f:
         for line in f:
@@ -73,6 +74,8 @@ if len(sys.argv) > 3:
                 codes_all.append(int(line[0:8]))
         f.close()
     codes_downloaded = []
+    global log
+    log = dir_prj + ".log_" + sys.argv[1]
     with open(log, "r") as f:
         for line in f:
             if line[9:10] == "O" or line[9:10] == "N":
@@ -81,7 +84,7 @@ if len(sys.argv) > 3:
     ## Codes plan to download;
     codes = list(set(codes_all) - set(codes_downloaded)) 
     print "There are " + str(len(codes)) + " codes need to redownload!"
-    time.sleep(2)
+    time.sleep(5)
     ## Main;
     pool = Pool(8)
     pool.map(download_page, codes) 
@@ -106,6 +109,7 @@ else:
     pool.close()  
     pool.join()  
 
-
-
+##import subprocess 
+##output = subprocess.check_output("find /home/tian/Finn/pages_8 -type f", shell=True)
+##file_ls <- output.split('\n')
 
