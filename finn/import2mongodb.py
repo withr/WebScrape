@@ -15,12 +15,8 @@ db = client['mongoFinn']
 collection = db['HTMLs']
 
 
-if len(sys.argv)>1:
-    N = sys.argv[1]
-else:
-    N = "8"
 
-shellMSG = subprocess.check_output("find /home/tian/HDD1T/Finn/pages_" + N + " -type f", shell=True)
+shellMSG = subprocess.check_output("find /home/tian/HDD1T/Finn/pages_8 -type f", shell=True)
 html_ls =  shellMSG.split('\n')
 
 
