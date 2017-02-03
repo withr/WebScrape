@@ -86,16 +86,33 @@ for post in postnrs_all:
 
 
 
+
 URL = "http://eiendom.statkart.no/Search.ashx?filter=KILDE:sted,matreiendom,SITEURLKEY:httpwwwseeiendomno,LESEGRUPPER:guests&term="
+
+proxies_ls = [
+    "https://37.9.45.242:8085",
+    "https://91.243.94.120:8085",
+    "https://93.179.89.230:8085",
+    "https://146.185.204.86:8085",
+    "https://91.243.89.89:8085"] 
+
+
+N = 0
 
 def eiendom(id):
 	add = address.find()[id]
 	term = add['ADRESSE'] + ', ' + add['POSTNR']+ ' ' + re.sub(' *\t *', '', add['KOMMUNE'])
 	url=URL+term
-	r = requests.get(url, proxies = {"https":"https://93.179.89.230:8085"}, timeout=5)
+	proxy = {"https": proxies_ls[id % len(proxies_ls)]}
+	r = requests.get(url, proxies = proxy, timeout=5)
+	global N
+	N = N + 1
 	if r.content != '[]':
 		address.update({'_id': add['_id']}, {'$set':{ 'eiendom': r.content.decode('latin-1')}}, upsert=True)
-		print "id: " + str(id) + "; "+ str(r.status_code) 
+		msg = "\r " + str(N) + " processed!"
+		sys.stdout.write(msg); sys.stdout.flush()
+
+
 
 
 ID = range(0, address.count())
@@ -105,6 +122,8 @@ pool = Pool(8)
 pool.map(eiendom, ID) 
 pool.close()  
 pool.join()  
+
+
 
 
 
