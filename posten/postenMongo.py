@@ -86,6 +86,27 @@ for post in postnrs_all:
 
 
 
+URL = "http://eiendom.statkart.no/Search.ashx?filter=KILDE:sted,matreiendom,SITEURLKEY:httpwwwseeiendomno,LESEGRUPPER:guests&term="
+
+def eiendom(id):
+	add = address.find()[id]
+	term = add['ADRESSE'] + ', ' + add['POSTNR']+ ' ' + re.sub(' *\t *', '', add['KOMMUNE'])
+	url=URL+term
+	r = requests.get(url, proxies = {"https":"https://93.179.89.230:8085"}, timeout=5)
+	if r.content != '[]':
+		address.update({'_id': add['_id']}, {'$set':{ 'eiendom': r.content.decode('latin-1')}}, upsert=True)
+		print "id: " + str(id) + "; "+ str(r.status_code) 
+
+
+ID = range(0, address.count())
+
+
+pool = Pool(8)
+pool.map(eiendom, ID) 
+pool.close()  
+pool.join()  
+
+
 
 
 
