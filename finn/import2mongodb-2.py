@@ -9,7 +9,7 @@ from multiprocessing.dummy import Pool
 
 ##connect to default MongoClient
 client = MongoClient()
-client.drop_database('FinnBoligTilSalg')
+##client.drop_database('FinnBoligTilSalg')
 
 ## Link to a database, if the database not exist, create it.
 db = client['FinnBoligTilSalg']
@@ -18,10 +18,10 @@ collection = db['pages']
 collection.count()
 
 
-folder = "/home/tian/HDD1T/Finn/pages_8/Eiendom/Bolig\ til\ salgs"
+folder = "/home/tian/HDD1T/Finn/pages_7/Eiendom/Bolig\ til\ salgs"
 shellMSG = subprocess.check_output("find " + folder + " -type f", shell=True)
 html_ls =  shellMSG.split('\n')
-
+len(html_ls)
 
 def html2mongo(html): 
     finnkode = html[-13:-5]
@@ -102,7 +102,6 @@ pool = Pool(8)
 pool.map(html2mongo, html_ls) 
 pool.close()  
 pool.join()
-
 print "\nImporting used " + str(int(time.time() - t1)) + " seconds in total!\n"
 
 
