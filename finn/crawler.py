@@ -7,23 +7,34 @@ from bs4 import BeautifulSoup as BS
 
 ## Define constant variables;
 URL = "https://m.finn.no/lookup.html?finnkode="
-dir_prj = "/home/tian/Finn/"
+dir_prj = "/home/tian/HDD1T/Finn/"
 
+## Unit: 10 million
 codeLen = 10000000
-codeFirst = int(sys.argv[1]) * codeLen
-codeLast  = int(sys.argv[1]) * codeLen + codeLen
+arg = sys.argv[1]
+codeFirst = codeLen * (int(arg) + 0)
+if len(sys.argv) == 2:
+    codeLast  = codeLen * (int(arg) + 1) 
+if len(sys.argv) == 3:
+    codeLast  = codeLen * (int(float(sys.argv[2])) + 1) 
 
-pag = dir_prj + "pages_" + sys.argv[1] + "/"
-log = dir_prj + "log_" + sys.argv[1]
+## Generate directory and log
+pag = dir_prj + "pages_" + arg + "/"
+log = dir_prj + "log_" + arg
 
+if not os.path.exists(pag):
+    os.makedirs(pag)
+
+if not os.path.exists(log):
+    os.system("touch " + log)
+
+    
 proxies_ls = [
-    "https://37.9.45.242:8085",
-    "https://91.243.94.120:8085",
-    "https://93.179.89.230:8085",
-    "https://146.185.204.86:8085",
-    "https://91.243.89.89:8085"] 
-
-proxy = {"https": proxies_ls[int(sys.argv[1]) % len(proxies_ls)]}
+    "https://91.200.83.107:8085",
+    "https://91.243.94.107:8085",
+    "https://91.204.14.113:8085",
+    "https://146.185.204.70:8085",
+    "https://193.105.171.7:8085"] 
 
 
 ####### Record log
@@ -37,6 +48,7 @@ def write_log(finn_code, msg):
 def download_page(finn_code):
     url = URL + str(finn_code)
     try:
+        proxy = {"https" : proxies_ls[id % len(proxies_ls)]}
         r = requests.get(url, proxies = proxy, timeout=5)
         if r.status_code == 200:
             html = r.content
@@ -64,52 +76,51 @@ def download_page(finn_code):
             write_log(finn_code, "NotExist")
     except:
         write_log(finn_code, "RequestError")   
+        global id
+        id = id + 1
+        sleep(1)
 
-        
-if len(sys.argv) > 2:
-    codes_all = []
-    with open(log, "r") as f:
-        for line in f:
-            if line[9:10] != "O" and line[9:10] != "N":
-                codes_all.append(int(line[0:8]))
-        f.close()
-    codes_downloaded = []
-    global log
-    log = dir_prj + ".log_" + sys.argv[1]
-    with open(log, "r") as f:
-        for line in f:
-            if line[9:10] == "O" or line[9:10] == "N":
-                codes_downloaded.append(int(line[0:8]))
-        f.close() 
-    ## Codes plan to download;
-    codes = list(set(codes_all) - set(codes_downloaded)) 
-    print "There are " + str(len(codes)) + " codes need to redownload!"
-    time.sleep(5)
-    ## Main;
+
+
+id = 1
+
+## Total codes;
+codes_all = range(codeFirst, codeLast)
+## Tried codes;
+codes_tried = []
+with open(log, "r") as f:
+    for line in f:
+        codes_tried.append(int(line[0:8]))
+    f.close()
+## Codes not tried;
+codes_untried = list(set(codes_all) - set(codes_tried))
+
+
+codes_downloaded = []
+with open(log, "r") as f:
+    for line in f:
+        if line[9:10] == "O" or line[9:10] == "N" or line[9:10] == "P":
+            codes_downloaded.append(int(line[0:8]))
+    f.close() 
+codes_redownload = list(set(codes_all) - set(codes_downloaded))
+
+    
+if len(codes_untried) > 0:
+    print "There are " + str(len(codes_untried)) + " codes need to download!"
+    time.sleep(5)    
+    pool = Pool(16)
+    pool.map(download_page, codes_untried) 
+    pool.close()  
+    pool.join() 
+elif len(codes_redownload) > 0:
+    print "There are " + str(len(codes_redownload)) + " codes need to redownload!"
+    time.sleep(5)   
     pool = Pool(8)
-    pool.map(download_page, codes) 
+    pool.map(download_page, codes_redownload) 
     pool.close()  
     pool.join()
 else:
-    ## Total codes;
-    codes_all = range(codeFirst, codeLast)
-    ## Downloaded/tried codes;
-    codes_downloaded = []
-    with open(log, "r") as f:
-        for line in f:
-            codes_downloaded.append(int(line[0:8]))
-        f.close()
-    ## Codes plan to download;
-    codes = list(set(codes_all) - set(codes_downloaded))
-    print "There are " + str(len(codes)) + " codes need to download!"
-    time.sleep(5)    
-    ## Main;
-    pool = Pool(8)
-    pool.map(download_page, codes) 
-    pool.close()  
-    pool.join()  
+    print "All codes have been downloaded!"
 
-##import subprocess 
-##output = subprocess.check_output("find /home/tian/Finn/pages_8 -type f", shell=True)
-##file_ls <- output.split('\n')
+
 
