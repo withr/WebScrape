@@ -4,6 +4,7 @@
 from time import *
 import re, sys, os, random, requests
 from bs4 import BeautifulSoup as BS
+from multiprocessing.dummy import Pool
 
 
 ## Define constant variables;
@@ -14,6 +15,7 @@ pag = Prj + "crawled" + ext + "/"
 log = Prj + "crawled" + ext + ".log"   
 ## If folder/log file not exist, create.   
 if not os.path.exists(pag): os.makedirs(pag)
+
 if not os.path.exists(log): os.system("touch " + log)
 
 
@@ -32,38 +34,54 @@ proxies_ls = [
     "https://146.185.204.70:8085",
     "https://193.105.171.7:8085"] 
     
-ID_proxy = 0    
-def download_page(postnr):
-    url = URL + postnr
-    Nr_tried = 0
-    while Nr_tried < len(proxies_ls):
-        proxies = {"https" : proxies_ls[id % 5]}
+## Global ID for proxy to be used;    
+ID = 0
+Exe = True; ## 
+ 
+def download_page(key):
+    url = URL + key
+    N = 0
+    while Exe and N < len(proxies_ls):
+        id = ID
+        proxies = {"https" : proxies_ls[id]}
         r = requests.get(url, proxies = proxies, timeout=5)
-        sleep(1)
-        html = r.content
-        bs = BS(html)
-        try:
+        if r.status_code == 200:
+            html = r.content
+            bs = BS(html) 
             search_count = bs.find("h2", {"class": "search_count"}).get_text().encode('utf8', 'replace')
             search_count = re.sub("^ *", "", search_count)
             search_parse = search_count.split(" ")
             if search_parse[1] == "adresser" and search_parse[0] != "0":
-                file_name = wd + postnr + ".html"
-                with open(file_name, "w") as f:
-                    f.write(html)
-                    f.close()
-                write_log(postnr, "OK")
+                file_name = pag + key + ".html"
+                #with open(file_name, "w") as f:
+                #    f.write(html)
+                #    f.close()
+                write_log(key, "OK")
             else:
-                write_log(postnr, "NoAddress")
-            notDownloaded = False
-        except:
-            global id
-            id = id + 1
-            sleep(1)
-            msg = "\rPostnumber " + postnr + " try later!" + " waited " + str(int(time()-t1)) + " seconds."
-            sys.stdout.write(msg); sys.stdout.flush()
-        ID_proxy += ID_proxy
-    else:
-        break
+                write_log(key, "NoAddress")
+            N = len(proxies_ls); ## stop while loop
+        else:
+            proxy_1 = proxies_ls[id]
+            global ID
+            ID = (id + 1) % len(proxies_ls)
+            proxy_2 = proxies_ls[ID]
+            N = N + 1
+            if N == len(proxies_ls):
+                global Exe
+                Exe = False
+            print "\rPostnumber " + key + ": IP (" + proxy_1 + ") was baned, try to use new one!" + " (" + proxy_2 + ")"
+
     
-    
-    
+keys = []
+for i in range(1500, 8800):
+    key = '{:04d}'.format(i)
+    print key
+    download_page(key)
+    keys.append('{:04d}'.format(i))    
+
+
+pool = Pool(8)
+pool.map(download_page, keys) 
+pool.close()  
+pool.join()
+
