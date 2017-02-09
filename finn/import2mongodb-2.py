@@ -4,8 +4,6 @@
 import re, sys, os, time, subprocess
 from bs4 import BeautifulSoup as BS
 from pymongo import MongoClient
-from multiprocessing.dummy import Pool
-
 
 ##connect to default MongoClient
 client = MongoClient()
@@ -18,10 +16,11 @@ collection = db['pages']
 collection.count()
 
 
-folder = "/home/tian/HDD1T/Finn/pages_7/Eiendom/Bolig\ til\ salgs"
+folder = "/home/tian/1T/Finn/pages_8/Eiendom/Bolig\ til\ salgs"
 shellMSG = subprocess.check_output("find " + folder + " -type f", shell=True)
-html_ls =  shellMSG.split('\n')
+html_ls =  shellMSG.split('\n')[:-1]
 len(html_ls)
+
 
 def html2mongo(html): 
     finnkode = html[-13:-5]
@@ -97,11 +96,12 @@ def html2mongo(html):
     msg = "\rImported " + str(collection.count()) + " files!"
     sys.stdout.write(msg); sys.stdout.flush()  
 
+
 t1 = time.time()
-pool = Pool(8)
-pool.map(html2mongo, html_ls) 
-pool.close()  
-pool.join()
+for i in range(len(html_ls)-1):
+    print i
+    html2mongo(html_ls[i])
+
 print "\nImporting used " + str(int(time.time() - t1)) + " seconds in total!\n"
 
 
