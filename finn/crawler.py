@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup as BS
 
 ## Define constant variables;
 URL = "https://m.finn.no/lookup.html?finnkode="
-dir_prj = "/home/tian/HDD1T/Finn/"
+dir_prj = "/home/tian/1T/Finn/"
 
 ## Unit: 10 million
 codeLen = 10000000
