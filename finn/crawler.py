@@ -31,7 +31,6 @@ if not os.path.exists(log):
     
 proxies_ls = [
     "https://91.200.83.107:8085",
-    "https://91.243.94.107:8085",
     "https://91.204.14.113:8085",
     "https://146.185.204.70:8085",
     "https://193.105.171.7:8085"] 
@@ -42,7 +41,7 @@ def write_log(finn_code, msg):
     with open(log, "a") as l:
         l.write(str(finn_code) + " " +  msg + " " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
         l.close()
-    print  "\rPostnumber: " + str(finn_code) + " " + msg + "!"
+    print  "\rKey: " + str(finn_code) + " " + msg + "!"
 
 
 def download_page(finn_code):
@@ -72,13 +71,15 @@ def download_page(finn_code):
                 write_log(finn_code, "OK " + file_name)    
             except:
                 write_log(finn_code, "ParseError")  
+        elif r.status_code == 403:
+            global id
+            id = id + 1
+            sleep(1)
         else:
             write_log(finn_code, "NotExist")
     except:
         write_log(finn_code, "RequestError")   
-        global id
-        id = id + 1
-        sleep(1)
+
 
 
 
