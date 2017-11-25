@@ -22,7 +22,7 @@ for m in range(0, len(BID)):
 		browser.get(url)
 		time.sleep(randint(10, 15))
 		span  = browser.find_elements_by_xpath("//div[@id='ContentPlaceHolder1_gridtable1']//div//div//span")
-		pages = int(span[1].text[1:])
+		pages = int(span[len(span)-1].text[1:])
 		print pages
 		for i in range(pages):
 			browser.execute_script("KnsPager.go(" + str(i+1) + ",'gridtable1')")
