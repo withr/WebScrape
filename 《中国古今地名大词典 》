@@ -39,7 +39,7 @@ for m in range(0, len(BID)):
 					print "wait " + str(N) + " times!"
 					time.sleep(3)
 			if actv[0].text == str(i+1):
-				print BID[m]  + "_" + format(n+1, '03d') + "_" + str(i+1) + ": Javascript excutes successfully!\n"
+				print BID[m]  + "_" + format(n+1, '03d') + "_" + str(i+1) + ": Javascript excutes successfully!"
 				htmllink = browser.page_source.encode('utf8', 'replace')
 				with open(filelink, "w") as f:
 					f.write(htmllink)
