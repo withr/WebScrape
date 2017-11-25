@@ -1,0 +1,65 @@
+from pyvirtualdisplay import Display
+from selenium import webdriver
+from bs4 import BeautifulSoup as BS
+import time, re, os, sys, urllib
+from random import randint
+
+display = Display(visible=0, size=(1920, 1080)).start()
+browser = webdriver.Firefox()
+
+
+URL = "http://art.tze.cn/Refbook/book.aspx?bi=m.20071106-m300-w001-002&p="
+pages = 1232
+for p in range(pages):
+	N = 0
+	while (N < 10):
+		url = URL + str(p+1)
+		print url
+		browser.get(url)
+		time.sleep(2 + N*2)
+		numb = browser.find_element_by_xpath("//a[@class='p_curpage']")
+		if numb.text == str(p+1):
+			print numb.text + " : " + str(p+1)
+			N = 10
+		else:
+			N = N + 1
+			print "wait " + str(N) + " times!"
+	filelink = "/home/tian/25rm/A_" + format(p+1, '04d')  + ".html"
+	if numb.text == str(p+1):
+		htmllink = browser.page_source.encode('utf8', 'replace')
+		with open(filelink, "w") as f:
+			f.write(htmllink)
+			f.close()
+	else:
+		with open("/home/tian/25rm/log", "a") as f:
+			f.write(filelink + "\n")
+			f.close()
+
+
+
+URL = "http://art.tze.cn/Refbook/book.aspx?bi=m.20071106-m300-w001-001&p="
+pages = 1551
+for p in range(pages):
+	N = 0
+	while (N < 10):
+		url = URL + str(p+1)
+		print url
+		browser.get(url)
+		time.sleep(2 + N*2)
+		numb = browser.find_element_by_xpath("//a[@class='p_curpage']")
+		if numb.text == str(p+1):
+			print numb.text + " : " + str(p+1)
+			N = 10
+		else:
+			N = N + 1
+			print "wait " + str(N) + " times!"
+	filelink = "/home/tian/25rm/B_" + format(p+1, '04d')  + ".html"
+	if numb.text == str(p+1):
+		htmllink = browser.page_source.encode('utf8', 'replace')
+		with open(filelink, "w") as f:
+			f.write(htmllink)
+			f.close()
+	else:
+		with open("/home/tian/25rm/log", "a") as f:
+			f.write(filelink + "\n")
+			f.close()
