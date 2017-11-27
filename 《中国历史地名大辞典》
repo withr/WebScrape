@@ -1,1 +1,53 @@
 
+from pyvirtualdisplay import Display
+from selenium import webdriver
+from bs4 import BeautifulSoup as BS
+import time, re, os, sys, urllib
+from random import randint
+
+
+URL = "http://mall.cnki.net/reference/ref_search.aspx?bid="
+
+display = Display(visible=0, size=(1920, 1080)).start()
+browser = webdriver.Firefox()
+time.sleep(2)
+
+
+BID = ["R200606116", "R200606117"]
+CID = [7, 18]
+
+for m in range(1, len(BID)):
+	for n in range(4, CID[m]):
+		url = URL + BID[m] + "&cid=" + format(n+1, '03d')
+		print url
+		browser.get(url)
+		time.sleep(randint(10, 15))
+		span  = browser.find_elements_by_xpath("//div[@id='ContentPlaceHolder1_gridtable1']//div//div//span")
+		pages = int(span[len(span)-1].text[1:])
+		print pages
+		for i in range(0, pages):
+			browser.execute_script("KnsPager.go(" + str(i+1) + ",'gridtable1')")
+			time.sleep(3)
+			filelink = "/home/tian/lsdm/" + BID[m]  + "_" + format(n+1, '03d') + "_" + format(i+1, '04d')  + "("+ str(pages) + ").html"
+			N = 0
+			while (N < 10):
+				actv = browser.find_elements_by_xpath("//div[@id='ContentPlaceHolder1_gridtable1']//div//div//a[@class='active']")
+				if actv[0].text == str(i+1):
+					print actv[0].text + " : " + str(i+1)
+					N = 100
+				else:
+					N = N + 1
+					print "wait " + str(N) + " times!"
+					time.sleep(3)
+			if actv[0].text == str(i+1):
+				print BID[m]  + "_" + format(n+1, '03d') + "_" + str(i+1) + ": Javascript excutes successfully!"
+				htmllink = browser.page_source.encode('utf8', 'replace')
+				with open(filelink, "w") as f:
+					f.write(htmllink)
+					f.close()
+			else:
+				with open("/home/tian/lsdm/log", "a") as f:
+					f.write(filelink + "\n")
+					f.close()	
+
+
