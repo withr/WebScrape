@@ -43,7 +43,7 @@ for i in range(0, len(Keys)):
     htmlkey = browser.page_source.encode('utf8', 'replace')
     bs = BS(htmlkey)
     keyfirst = bs.find("td", {'class':"t114"}).text.encode('utf8', 'replace')
-    filekey = "/home/tian/gdmr/" + format(i, '04d') + "_"  + format(0, '04d') + "_"  + keyfirst + ".html"
+    filekey = "/home/tian/ldzg/" + format(i, '04d') + "_"  + format(0, '04d') + "_"  + keyfirst + ".html"
     keysrest = bs.findAll("a", {'href':re.compile(r'.*bookdetailid.*'), 'class':"t314"})
     with open(filekey, "w") as f:
         f.write(htmlkey)
@@ -56,7 +56,7 @@ for i in range(0, len(Keys)):
             browser.get(urllink)
             time.sleep(randint(1, 3))
             htmllink = browser.page_source.encode('utf8', 'replace')
-            filelink = "/home/tian/gdmr/" + format(i, '04d') + "_"  + format(k+1, '04d') + "_"  + keysrest[k].text.encode('utf8', 'replace') + ".html"
+            filelink = "/home/tian/ldzg/" + format(i, '04d') + "_"  + format(k+1, '04d') + "_"  + keysrest[k].text.encode('utf8', 'replace') + ".html"
             with open(filelink, "w") as f:
                 f.write(htmllink)
                 f.close()
