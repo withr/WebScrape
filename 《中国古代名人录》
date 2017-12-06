@@ -1,0 +1,64 @@
+from pyvirtualdisplay import Display
+from selenium import webdriver
+from bs4 import BeautifulSoup as BS
+import time, re, os, sys, urllib
+from random import randint
+
+## Note: include ?hl=en make sure the page display language is English, otherwise will be the system default language.
+gglg = "http://www.gg-art.com/include/login.php"
+
+display = Display(visible=0, size=(1920, 1080)).start()
+browser = webdriver.Firefox()
+browser.get(gglg)
+time.sleep(2)
+
+username = browser.find_element_by_id("username")
+password = browser.find_element_by_id("password")
+username.send_keys("youxiande")
+password.send_keys('Tian1234')
+browser.find_element_by_xpath("//input[@type='submit']").click()
+time.sleep(2)
+
+
+pMain = 'http://www.gg-art.com/dictionary/index.php?bookid=34&columns=3'
+
+Keys = list()
+browser.get(pMain)
+time.sleep(randint(1, 5))
+print "Load " + pMain
+html =  browser.page_source.encode('utf8', 'replace')
+bs = BS(html)
+for key in bs.findAll("a", {'class', 'tt18'}):
+    Keys.append(key.text)
+    
+
+  
+import urllib
+ggkey = "http://www.gg-art.com/dictionary/dcontent.php?columns=3&bookid=34&name="        
+for i in range(0, len(Keys)):
+    print "The " + str(i) + " word!"
+    url = ggkey +  urllib.quote(Keys[i].encode('utf8', 'replace'))
+    browser.get(url)
+    time.sleep(randint(1, 5))
+    htmlkey = browser.page_source.encode('utf8', 'replace')
+    bs = BS(htmlkey)
+    keyfirst = bs.find("td", {'class':"t114"}).text.encode('utf8', 'replace')
+    filekey = "/home/tian/gdmr/" + format(i, '04d') + "_"  + format(0, '04d') + "_"  + keyfirst + ".html"
+    keysrest = bs.findAll("a", {'href':re.compile(r'.*bookdetailid.*'), 'class':"t314"})
+    with open(filekey, "w") as f:
+        f.write(htmlkey)
+        f.close()
+    if len(keysrest) > 0:
+        print "The " + str(i) + " word contains " + str(len(keysrest)) + " links!"
+        for k in range(0, len(keysrest)): 
+            print keysrest[k]['href']
+            urllink = "http://www.gg-art.com/dictionary/" +  keysrest[k]['href']
+            browser.get(urllink)
+            time.sleep(randint(1, 3))
+            htmllink = browser.page_source.encode('utf8', 'replace')
+            filelink = "/home/tian/gdmr/" + format(i, '04d') + "_"  + format(k+1, '04d') + "_"  + keysrest[k].text.encode('utf8', 'replace') + ".html"
+            with open(filelink, "w") as f:
+                f.write(htmllink)
+                f.close()
+
+
