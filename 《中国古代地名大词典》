@@ -54,7 +54,7 @@ for i in range(0, len(Keys)):
         print "The " + str(i) + " word contains " + str(len(keysrest)) + " links!"
         for k in range(0, len(keysrest)): 
             print keysrest[k]['href']
-            urllink = "http://www.gg-art.com/" +  keysrest[k]['href']
+            urllink = "http://www.gg-art.com/dictionary/" +  keysrest[k]['href']
             browser.get(urllink)
             time.sleep(randint(1, 3))
             htmllink = browser.page_source.encode('utf8', 'replace')
